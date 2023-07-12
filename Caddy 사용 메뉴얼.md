@@ -147,3 +147,7 @@ Error creating new order :: too many failed authorizations recently:
 # 4. 테스트
 
 이제 발급받은 도메인에 접속해보자. https로 접속이 되면 성공이다.
+
+# 5. 문제점
+
+하지만 이런 방식으로 리버스 프록시 서버를 설정하면 기존 http 주소로 접속을 해도 접속이 된다. 이는 보안에 치명적인 구멍이다. 이를 보완하기 위한 해결책을 마련해야 한다.
