@@ -1,5 +1,32 @@
 # AWS HTTPS 설정 메뉴얼
 
+# 목차
+- [AWS HTTPS 설정 메뉴얼](#aws-https-설정-메뉴얼)
+- [목차](#목차)
+- [1. 도메인 별칭 등록 및 ACM 인증](#1-도메인-별칭-등록-및-acm-인증)
+  - [인증서 요청 (도메인 SSL 인증)](#인증서-요청-도메인-ssl-인증)
+  - [DNS 검증하기](#dns-검증하기)
+    - [CNAME 레코드](#cname-레코드)
+    - [DNS 검증 진행 과정](#dns-검증-진행-과정)
+- [2. SSL 인증서 발급](#2-ssl-인증서-발급)
+    - [Route 53](#route-53)
+  - [호스팅 영역 생성](#호스팅-영역-생성)
+  - [Route 53에서 레코드 생성](#route-53에서-레코드-생성)
+- [3. 어플리케이션 로드 벨런서(ALB) 설정](#3-어플리케이션-로드-벨런서alb-설정)
+  - [어플리케이션 로드 벨런서 생성하기](#어플리케이션-로드-벨런서-생성하기)
+    - [ALB(Application Load Balancer)](#albapplication-load-balancer)
+  - [리다이렉트 설정](#리다이렉트-설정)
+    - [HTTP:80 규칙 추가](#http80-규칙-추가)
+    - [HTTPS:443 규칙 추가(선택)](#https443-규칙-추가선택)
+  - [EC2 보안 그룹](#ec2-보안-그룹)
+  - [테스트](#테스트)
+    - [Health check 문제](#health-check-문제)
+  - [ALB 레코드 생성 (ALB에 외부 도메인 연동)](#alb-레코드-생성-alb에-외부-도메인-연동)
+  - [ERR\_CONNECTION\_TIMED\_OUT](#err_connection_timed_out)
+    - [해결책: DNS 레코드에서 ALB public ip 주소를 반환하도록 한다.](#해결책-dns-레코드에서-alb-public-ip-주소를-반환하도록-한다)
+  - [번외) mixed content 에러](#번외-mixed-content-에러)
+
+
 # 1. 도메인 별칭 등록 및 ACM 인증
 
 [내 도메인 한국](https://xn--220b31d95hq8o.xn--3e0b707e/page/domain_conf_view.php?id=1517724&order=1&page=1) 사이트를 통해 도메인을 발급받았다는 전제 하에 진행하겠다.
