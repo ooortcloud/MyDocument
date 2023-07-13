@@ -2,11 +2,21 @@
 
 # 목차
 
----
+- [검증 요구사항](#검증-요구사항)
+- [검증 직접 처리 - 소개](#검증-직접-처리---소개)
+- [검증 직접 처리 - 개발](#검증-직접-처리---개발)
+- [BindingResult1](#bindingresult1)
+- [BindingResult2](#bindingresult2)
+- [FieldError, ObjectError](#fielderror-objecterror)
+- [오류 메세지 설정](#오류-코드와-메세지-처리1-오류-메세지-설정)
+- [rejectValue 메소드](#오류-코드와-메세지-처리2-rejectvalue-메소드)
+- [단순함 vs 세밀함](#오류-코드와-메세지-처리3-단순함-vs-세밀함)
+- [messageCodesResolver](#오류-코드와-메세지-처리4-messagecodesresolver)
+- [오류 코드 관리](#오류-코드와-메세지-처리5-오류-코드-관리)
+- [타입 오류 처리](#오류-코드와-메세지-처리6-타입-오류-처리)
+
 
 # 검증 요구사항
-
----
 
 기존에 만들었던 상품 관리 시스템에 새 요구사항을 적용해보자.
 
@@ -30,8 +40,6 @@
 
 # 검증 직접 처리 - 소개
 
----
-
 현재 우리가 개발해온 프로그램의 로직은 아래와 같다.
 
 ![Untitled](04%20%E1%84%80%E1%85%A5%E1%86%B7%E1%84%8C%E1%85%B3%E1%86%BC1%20-%20validation%2089fe4d0df8e04b21b5f9ffd76c8a3cb8/Untitled.png)
@@ -46,8 +54,6 @@
 - 이때 잘못된 부분은 보기 쉽게 따로 표시해준다.
 
 # 검증 직접 처리 - 개발
-
----
 
 초기 작업 환경은 강사님이 직접 꾸린 패키지 형식이라, 굳이 여기서 세팅하고 싶지 않다. 대신 핵심 코드들을 추출해서 유의미한 예제들만 남기도록 노력했다. 필요하면 섹션 2의 작업 환경을 참고하라.
 
@@ -254,8 +260,6 @@
 
 # BindingResult1
 
----
-
 Spring이 제공하는 `BindingResult` 인터페이스를 사용해서 검증 오류 처리를 해보자.
 
 - ValidationItemControllerV2
@@ -346,8 +350,6 @@ thymeleaf에서는 Spring의 `BindingResult`를 통해 편리하게 검증 오�
 
 # BindingResult2
 
----
-
 - `BindingResult` 는 검증 오류를 저장할 수 있는 객체이다. 만약 검증 오류를 저장해야 한다면 BindiingResult를 활용하면 된다.
 - 그리고 BindingResult를 사용하면 `@ModelAttribute`에 데이터 바인딩 도중 오류가 발생해도 컨트롤러가 호출되어, Spring 기본 에러 페이지를 띄울 일이 없어진다!
 - BindingResult는 인터페이스이다. 그리고 Errors 인터페이스를 상속받고 있다. Errors 인터페이스는 단순한 오류 저장 및 조회 기능을 제공하는데, BindingResult는 여기에 더해 부가적인 기능을 갖고 있다고 보면 된다.
@@ -366,8 +368,6 @@ thymeleaf에서는 Spring의 `BindingResult`를 통해 편리하게 검증 오�
 - BindingResult는 model에 자동으로 포함되므로, model.addAttribute해서 bindingResult를 model에 담으려고 하지 않아도 된다.
 
 # FieldError, ObjectError
-
----
 
 이번에는 에러가 발생했을 때 사용자의 입력을 유지한 채로 에러를 표시하도록 만들어보자. 지금은 타입 에러가 발생했을 때 오류가 아닌, 단순히 입력 숫자가 조건에 맞지 않았을 때의 검증 오류만 다룰 것이다. 이는 사용자의 편의성을 제공해주기 위해 반드시 고려해야 할 옵션이다. 이전에 addItem 메소드의 @PostMapping 어노테이션을 주석처리하여 테스트를 진행하자.
 
@@ -463,8 +463,6 @@ thymeleaf의 th:field는 정상적인 상황에서는 모델 객체의 값을 �
 
 # 오류 코드와 메세지 처리1 (오류 메세지 설정)
 
----
-
 ## error 메세지 파일 생성
 
 기존에 만들어둔 messages.properties 파일을 활용해도 되지만, 오류 메세지를 따로 구분하기 위해 errors.properties 파일을 생성하자. (경로는 resources 패키지 바로 아래)
@@ -532,8 +530,6 @@ RedirectAttributes redirectAttributes) {
 서버를 재실행해보면 정상적으로 작동하는 것을 볼 수 있다.
 
 # 오류 코드와 메세지 처리2 (rejectValue 메소드)
-
----
 
 하지만 `FieldError` 생성자는 너무 많은 파라미터를 요구한다. 그래서 이 방식으로 에러 메세지를 처리하는 것은 권장하지 않는다.
 
@@ -626,8 +622,6 @@ addItemV3의 @PostMapping을 주석처리하고 아래 메소드를 추가한다
 
 # 오류 코드와 메세지 처리3 (단순함 vs 세밀함)
 
----
-
 이전에 우리는 오류 코드를 아래와 같이 작성했다.
 
 ```java
@@ -663,8 +657,6 @@ required: 필수 값 입니다.
 ```
 
 # 오류 코드와 메세지 처리4 (MessageCodesResolver)
-
----
 
 ## MessageCodesResolver
 
@@ -803,8 +795,6 @@ thymeleaf 화면을 렌더링할 때 th:error도 실행되는데, 만약 오류�
 
 # 오류 코드와 메세지 처리5 (오류 코드 관리)
 
----
-
 ## 오류 코드 관리 전략
 
 앞서 소개했듯, 오류 코드 관리는 구체적인 것부터 시작하고 단순한 것으로 끝맺음으로 하는 것이 좋다. 
@@ -868,8 +858,6 @@ ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required")
 
 # 오류 코드와 메세지 처리6 (타입 오류 처리)
 
----
-
 검증 오류 방식은 아래처럼 두 가지로 나뉜다.
 
 1. 개발자가 직접 추가 → rejectValue() 메소드 활용
@@ -898,8 +886,6 @@ typeMismatch=타입 오류입니다.
 위 내용을 errors.properties 파일에 추가하고 서버를 재실행해보자. 지저분한 에러 메세지가 위 메세지로 변경되었음을 확인할 수 있다.
 
 # Validatior 분리 1
-
----
 
 근데 지금 보면 컨트롤러가 검증 로직에 의해서 가독성이 매우 떨어져 버렸다. 따로 검증 로직을 분리해야 할 필요성이 느껴진다.
 
@@ -988,8 +974,6 @@ private final ItemValidation itemValidator;
 그리고 메소드 안에서는 앞서 만든 클래스의 validate 메소드를 호출하여 이전에 만들어둔 검증 로직을 거치도록 만든다. 이렇게 하면 기존 로직은 전혀 변경되지 않으면서, 컨트롤러 클래스의 전체적인 가독성이 향상된다는 장점이 있다.
 
 # Validatior 분리 2
-
----
 
 이번에는 좀 더 검증 로직을 간소화시켜보자.
 
