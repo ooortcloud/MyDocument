@@ -23,6 +23,8 @@
     - [도커 설치 및 옵션 설정](#도커-설치-및-옵션-설정)
     - [도커 허브에 이미지 저장하기](#도커-허브에-이미지-저장하기)
     - [도커 허브에서 이미지 불러오기](#도커-허브에서-이미지-불러오기)
+    - [도커 네트워크 설정하기](#도커-네트워크-설정하기)
+    - [번외) 생각해보기](#번외-생각해보기)
 
 
 # 도커란?
@@ -71,6 +73,7 @@ window에서 linux를 사용하기 위해 WSL을 사용하게 되는데, WSL에�
 ```
 # docker rmi <이미지_이름>:<이미지_태그>
 ```
+Image ID로도 삭제 가능하다.
 
 - 이미지 빌드
 
@@ -251,13 +254,20 @@ CMD ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     컨테이너가 성공적으로 실행되었을 때 매크로 명령으로 위 설정을 적용한다. 이 설정을 해줘야 DB에 한글 문자열을 깨지지 않게 넣을 수 있다.
     
 
-이제 이미지를 빌드하여 나만의 이미지를 만들어보자. 생성된 이미지는 “**docker images**” 명령어를 통해 확인할 수 있다.
+이제 이미지를 빌드하여 나만의 이미지를 만들어보자. 
+
+먼저 Dockerfile이 있는 디렉토리로 이동해야 한다. 만약 C드라이브의 "dockerProject" 폴더에 존재하는 경우, 아래 명령어로 이동하면 된다.
+
+```
+# cd /mnt/c/dockerProject
+```
 
 ```
 # docker build -t mydb .
 ```
+생성된 이미지는 “**docker images**” 명령어를 통해 확인할 수 있다.
 
-현재 Dockerfile이 존재하는 디렉토리에 “mydb”라는 이름의 이미지로 빌드하겠다는 의미이다.
+이 명령어는 현재 Dockerfile이 존재하는 디렉토리에 “mydb”라는 이름의 이미지로 빌드하겠다는 의미이다.
 
 ### JAVA 이미지 편집하기 - Spring 프로젝트
 
@@ -272,7 +282,11 @@ spring.datasource.password=1234
 
 여기서 url의 도메인에 주목하라. 도커 네트워크 안에서는 컨테이너 이름을 마치 해당 컨테이너의 도메인 주소처럼 사용할 수 있다. 도커 컨테이너가 실행될 때 내부 ip 주소가 가변적으로 바뀌기 때문에 반드시 컨테이너 이름으로 url을 설정해줘야 한다.
 
-그리고 IDE에서 빌드를 하여 .jar 파일을 생성한다. (상황에 따라 .war 파일을 써야 한다면 그렇게 빌드하라.) 우리는 이 파일을 Java Base 이미지에 포함시켜서 나만의 이미지로 만들 것이다.
+그리고 IDE에서 빌드를 하여 .jar 파일을 생성한다. (상황에 따라 .war 파일을 써야 한다면 그렇게 빌드하라.) 우리는 이 파일을 Java Base 이미지에 포함시켜서 나만의 이미지로 만들 것이다. gradle을 사용한다면 아래 명령어를 통해 Spring에서 jar 파일을 빌드하면 된다.
+```
+./gradlew build
+```
+빌드된 jar 파일은 "<프로젝트_파일_이름> - build - libs" 폴더 내에 있다.
 
 Dockerfile은 아래와 같이 작성한다.
 
@@ -305,7 +319,7 @@ ENTRYPOINT ["java", "-jar", "/home/api-server/dockerProject.jar"]
     
 3. COPY dockerProject.jar /home/api-server/dockerProject.jar
     
-    이미지 빌드 과정에서 Dockerfile과 같은 디렉토리 내의 “dockerProject.jar” 파일을 컨테이너 내의 “/home/api-server/dockerProject.jar”로 복사하여 저장해두겠다는 뜻.
+    이미지 빌드 과정에서 Dockerfile과 같은 디렉토리 내의 “dockerProject.jar” 파일을 컨테이너 내의 “/home/api-server/dockerProject.jar”로 복사하여 저장해두겠다는 뜻. 아까 빌드했던 jar 파일 명을 "dockerProject.jar"로 변경하거나, 여기서 해당 파일 명으로 변경한다.
     
 4. ENV SPRING_PROFILES_ACTIVE=dev
     
@@ -320,7 +334,7 @@ ENTRYPOINT ["java", "-jar", "/home/api-server/dockerProject.jar"]
     이 컨테이너가 시작하는 순간 입력할 자동 명령을 세팅함. 당장 위 명령만 보면 “java -jar /home/api-server/dockerProject.jar” 명령을 실행하라는 의미.
     
 
-이제 Dockerfile과 함께 나만의 이미지를 빌드하자.
+이제 Dockerfile과 함께 나만의 이미지를 빌드하자. Dockerfile이 있는 디렉토리에서 아래 명령어를 입력한다.
 
 ```
 # docker build -t api-server .
@@ -581,3 +595,94 @@ $ sudo su
 ```
 
 그러면 내가 편집했던 이미지들이 해당 인스턴스 서버에 깔려 있는 것을 볼 수 있다. 이제 아까 했던 것과 동일하게 각 이미지들을 실행시켜 컨테이너를 만들면 된다!
+
+### 도커 네트워크 설정하기
+
+인스턴스 서버에서도 다시 도커 네트워크를 구축해줘야 한다.
+
+```
+# docker network create springboot-server
+```
+
+그리고 이제 다운받은 도커 이미지들을 실행하면 된다.
+- mariaDB
+    ```
+    # docker run -d --name mydb --network springboot-server -p 3307:3306 -v /mnt/c/dockerProject/data:/var/lib/mysql mydb
+    ```
+- Spring
+    ```
+    # docker run -d -it --rm --name api-server-jdk --network springboot-server -p 8080:8080 api-server
+    ```
+- Nodejs
+    ```
+    # docker run -d --name react-app-container --network springboot-server -p 3000:3000 kimdm/frontend
+    ```
+
+각각의 내부 ip는 아래 명령어를 통해 확인할 수 있다.
+
+```
+# docker inspect <컨테이너_아이디>
+
+...
+            "Networks": {
+                "springboot-server": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "76a..."
+                    ],
+                    "NetworkID": "30...",
+                    "EndpointID": "c5...",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.4",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:...",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+```
+하지만 도커 네트워크 내부 ip는 도커가 마음대로 할당하는 것이기 때문에, 항상 해당 이미지의 컨테이너가 해당 ip를 가질 것이라고 보장하지 못한다.
+
+도커는 이 문제점을 해결하기 위해 "도커 컨테이너 이미지"로 주소를 설정해도 내부적으로 통신이 가능하도록 설계되었다.
+
+- 아래는 nodeJS의 js 파일에 백엔드 서버의 API로 연결하기 위해 작성하면 되는 코드 예시이다.
+
+    ```Javascript
+    const backendContainerName = 'backend'; // 백 서버의 도커 컨테이너 이름
+    const apiUrl = `http://${backendContainerName}:포트번호/your-api-endpoint`;
+
+    /** 예시
+     * const apiUrl = `http://${backendContainerName}:8080/api/data`;
+     * /
+    ```
+
+### 번외) 생각해보기
+1. **만약 프론트 서버와 백 서버가 서로 다른 도커 네트워크에 존재한다면, 백 서버 API를 얻기 위해서 프론트 서버 파일에 url을 어떻게 작성해야 하는가?**
+   
+    도커에서는 어떤 컨테이너를 다른 도커 네트워크에 연결하는 기능을 제공한다. 그러기 위해서는 아래 단계를 거쳐야 한다.
+
+    1. 도커 컨테이너 간 통신을 위해 새로운 네트워크를 생성
+
+        두 컨테이너는 서로 다른 도커 네트워크에 속해있기 때문에, 둘이 서로 통신할 수 있는 새로운 도커 네트워크를 생성해줘야 한다. 이렇게 컨테이너 간 통신을 위한 네트워크를 "사용자 정의 네트워크"라고 한다. 이건 앞서 도커 네트워크를 만들듯이 만들어주면 된다.
+        ```
+        # docker network create my-network
+        ```
+        이후 프론트 서버와 백 서버를 이 네트워크에 연결해주면 두 서버 간 통신이 가능해질 여지가 생긴다. (?)
+
+    2. 도커 컨테이너 간 통신을 위한 볼륨 매핑
+
+        하지만 두 서버는 서로 다른 네트워크에 있기 때문에 일반적인 네트워크 통신 방식으로는 통신할 수 없다. 이들을 통신하게 만들기 위해서는 "볼륨 매핑"이라는 것을 해줘야 한다. "볼륨 매핑"이란 호스트 시스템과 컨테이너 사이의 파일 시스템을 공유하는 것을 말하며, 볼륨 매핑을 함으로써 컨테이너가 호스트의 파일 시스템에 접근하는 권한을 얻을 수 있다. 이렇게 하면 호스트 시스템에 특정 디렉토리를 생성하고, 프론트 서버와 백 서버가 동시에 이 디렉토리를 볼륨 매핑하면 두 서버가 서로 다른 도커 네트워크에 있어도 파일 시스템 공유를 통해 통신이 가능해진다.
+
+        "docker run" 명령의 -v 옵션에서 볼륨 매핑을 설정할 수 있다.
+
+2. **만약 프론트 서버와 백 서버가 서로 다른 인스턴스 서버에 존재하고 두 서버는 하나의 로드 벨런서에 연결되어 있다면, 백 서버 API를 얻기 위해서 프론트 서버 파일에 url을 어떻게 작성해야 하는가? 로드 벨런서는 도메인을 발급받은 상태로 가정한다.**
+
+    이때는 `로드 벨런서`를 적극 활용해야 한다. 애초에 로드 벨런서의 역할이 서로 다른 서버들을 트래픽을 제어하면서 적절히 통신을 시키는 것. 로드 벨런서 내부에 이미 각 서버에 대한 ip 정보가 다 저장되어 있기 때문에 오히려 두 서버를 통신하게 만들기 쉽다. 프론트 서버는 그냥 로드 벨런서의 도메인 이름으로 연결해두면 된다. 
+    
+    중요한 건 로드 벨런서의 세팅이다. ELB 기준으로 "Listeners and rules" 옵션창이 핵심이다. 여기서는 각 요청마다의 조건을 걸어두고, 해당 조건을 만족 시키면 특정 "타겟 그룹"으로 포워딩하게 설정할 수 있다. (관련 내용은 AWS ELB 편에서 참고) 이 성질을 활용하면 어렵지 않게 두 서버를 연결시킬 수 있다.
