@@ -423,7 +423,7 @@ CMD [ "npm", "start" ]
 아래 명령어를 통해 새로 빌드한 mariaDB 이미지를 실행할 수 있다. “**docker run**” 명령에서 관리하는 옵션들을 Dockerfile에서 자동화를 할 수 없기 때문에 어쩔 수 없이 필수 옵션들을 추가해서 입력해줘야 한다.
 
 ```
-# docker run -d --name mydb --network springboot-server -p 3307:3306 -v /mnt/c/dockerProject/data:/var/lib/mysql mydb
+# docker run -d --name mydb --network springboot-server -p 3307:3306 -v /mnt/c/dockerProject/data:/var/lib/mysql kimdm/mydb
 ```
 
 1. -d 옵션은 해당 컨테이너를 실행시킬 때 백그라운드에서 실행시키라는 옵션이다. 도커 언어로 표현하면 “Detach” 모드로 실행시키는 것. 일반적인 서버 프로그램들은 실행시키면 콘솔창에서 글씨들을 주르륵 써내려가면서, 해당 프로그램을 종료하지 않는 한 해당 shell의 입력을 막아버리기 때문에 이 옵션을 애용함.
@@ -434,11 +434,12 @@ CMD [ "npm", "start" ]
     하지만 프론트나 백 서버의 경우에는 외부 포트도 신중하게 오픈해야 한다. 로드 벨런서를 사용하는 경우 로드 벨런서와 host가 통신하는 방식은 외부 포트 통신인데, 로드 벨런서는 해당 서버의 상태를 파악하기 위해 실시간으로 접속하여 정상 호출이 오는 지를 파악한다. 그래서 외부와 연결될 수 있도록 외부 포트 열어둬야 함.
     
 5. -v 옵션은 `로컬 마운트` 디렉토리 설정 옵션이다. “host_디렉토리 : 컨테이너_디렉토리” 형식의 문법을 갖춘다.
+6. 마지막은 내가 실행할 이미지 이름을 넣어준다.
 
 마찬가지로 새로 빌드한 JAVA 이미지를 실행해보자.
 
 ```
-# docker run -it --rm --name api-server-jdk --network springboot-server -p 8080:8080 api-server
+# docker run -d -it --rm --name api-server-jdk --network springboot-server -p 8080:8080 kimdm/api-server
 ```
 
 1. -it 옵션은 shell 인터페이스를 통해 쌍방향 통신을 하라는 옵션이다. 명령을 주고 로그를 받을 수 있게 만든다는 의미이다.
